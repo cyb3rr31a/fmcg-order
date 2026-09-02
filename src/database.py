@@ -1,24 +1,19 @@
 import os
-from pathlib import Path
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Import YOUR Base from models so SQLAlchemy knows about the inventory table!
-from models import Base
+# Grab the DATABASE_URL from the environment (Railway will provide this automatically)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fmcg.db")
 
-if os.getenv("K_SERVICE"):
-    DB_PATH = "/tmp/fmcg_order.db"
+# Fix a common quirk with cloud database URLs
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# Create the engine conditionally
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    DB_PATH = BASE_DIR / "data" / "fmcg_order.db"
+    engine = create_engine(DATABASE_URL)
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False}
-)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def init_db():
-    Base.metadata.create_all(engine)
+Base = declarative_base()
