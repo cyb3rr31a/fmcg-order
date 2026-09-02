@@ -6,7 +6,9 @@ import streamlit as st
 
 st.sidebar.header("Active Delivery Policies")
 
-policy_path = Path("data/delivery_policies.txt") 
+current_dir = Path(__file__).parent
+root_dir = current_dir.parent 
+policy_path = root_dir / "data" / "delivery_policies.txt"
 
 if policy_path.exists():
     with st.sidebar.expander("View Current RAG Knowledge Base"):
